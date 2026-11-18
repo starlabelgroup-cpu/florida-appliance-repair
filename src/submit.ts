@@ -156,5 +156,14 @@ export async function submitBooking(payload: BookingPayload): Promise<SubmitResu
   if (!res.ok || !reference) {
     throw new Error(body?.error || 'Your request did not go through — nothing was submitted.')
   }
+  // GA4 conversion event: Service OS accepted the booking and issued a
+  // reference code. Guarded — a silent no-op when no Google tag is
+  // installed on the page.
+  if (typeof (window as any).gtag === 'function') {
+    ;(window as any).gtag('event', 'booking_submitted', {
+      reference_code: String(reference),
+      via: BOOKING_VIA,
+    })
+  }
   return { reference: String(reference) }
 }
